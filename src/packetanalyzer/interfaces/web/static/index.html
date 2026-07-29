@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PacketSnifferAnalyzer Dashboard</title>
+    <meta name="description" content="Real-time network traffic analysis dashboard">
+    <!-- HTMX for server-driven interactivity -->
+    <script src="https://unpkg.com/htmx.org@1.9.12" integrity="sha384-ujb1lZYygJmzgSwoxRggbCHcjc0rB2uodhrgzmkvbZci3YUrZr7JthAW1R9M6Vx" crossorigin="anonymous"></script>
+    <!-- Alpine.js for lightweight reactivity -->
+    <script defer src="https://unpkg.com/alpinejs@3.14.0/dist/cdn.min.js"></script>
+    <!-- Chart.js for real-time charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="/static/css/dashboard.css">
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen" x-data="dashboard()">
+
+    <!-- Header -->
+    <header class="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <span class="text-blue-400 font-mono text-lg font-bold">PSA</span>
+            <span class="text-gray-400 text-sm">PacketSnifferAnalyzer</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <span class="text-xs text-gray-500" x-text="status"></span>
+            <span class="inline-block w-2 h-2 rounded-full"
+                  :class="capturing ? 'bg-green-400 animate-pulse' : 'bg-gray-600'"></span>
+        </div>
+    </header>
+
+    <!-- Legal Notice Banner -->
+    <div class="bg-amber-900/30 border-b border-amber-700/50 px-6 py-2 text-xs text-amber-300">
+        ⚠️ Legal Notice: Only capture traffic on networks you own or have explicit authorization to monitor.
+    </div>
+
+    <!-- Main Layout -->
+    <main class="flex h-[calc(100vh-88px)]">
+
+        <!-- Sidebar: Controls -->
+        <aside class="w-64 bg-gray-900 border-r border-gray-800 p-4 flex flex-col gap-4">
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">Interface</label>
+                <select class="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm"
+                        x-model="selectedInterface">
+                    <option value="">Select interface...</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-gray-400 mb-1">BPF Filter</label>
+                <input type="text"
+                       class="w-full bg-gray-800 border border-gray-700 rounded px-2 py-1 text-sm font-mono"
+                       placeholder="tcp port 80"
+                       x-model="bpfFilter">
+            </div>
+            <div class="flex gap-2">
+                <button class="flex-1 bg-green-700 hover:bg-green-600 text-white text-sm py-1.5 rounded"
+                        :disabled="capturing"
+                        hx-post="/api/capture/start"
+                        hx-vals='js:{"interface": selectedInterface, "filter": bpfFilter}'>
+                    Start
+                </button>
+                <button class="flex-1 bg-red-700 hover:bg-red-600 text-white text-sm py-1.5 rounded"
+                        :disabled="!capturing"
+                        hx-post="/api/capture/stop">
+                    Stop
+                </button>
+            </div>
+
+            <!-- Statistics -->
+            <div class="border-t border-gray-800 pt-4">
+                <div class="text-xs text-gray-400 mb-2">Statistics</div>
+                <div class="space-y-1 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Packets</span>
+                        <span class="font-mono" x-text="stats.totalPackets">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Pkt/s</span>
+                        <span class="font-mono" x-text="stats.pps">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Dropped</span>
+                        <span class="font-mono text-red-400" x-text="stats.dropped">0</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Content Area -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+
+            <!-- Charts Row -->
+            <div class="grid grid-cols-2 gap-4 p-4 border-b border-gray-800" style="height: 200px">
+                <div class="bg-gray-900 rounded p-3">
+                    <div class="text-xs text-gray-400 mb-2">Packets / Second</div>
+                    <canvas id="ppsChart"></canvas>
+                </div>
+                <div class="bg-gray-900 rounded p-3">
+                    <div class="text-xs text-gray-400 mb-2">Protocol Distribution</div>
+                    <canvas id="protocolChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Packet List -->
+            <div class="flex-1 overflow-auto">
+                <table class="w-full text-xs font-mono">
+                    <thead class="bg-gray-900 sticky top-0">
+                        <tr class="text-gray-400">
+                            <th class="px-3 py-2 text-left w-12">No.</th>
+                            <th class="px-3 py-2 text-left w-32">Time</th>
+                            <th class="px-3 py-2 text-left">Source</th>
+                            <th class="px-3 py-2 text-left">Destination</th>
+                            <th class="px-3 py-2 text-left w-20">Protocol</th>
+                            <th class="px-3 py-2 text-left w-16">Length</th>
+                            <th class="px-3 py-2 text-left">Info</th>
+                        </tr>
+                    </thead>
+                    <tbody id="packet-list" class="divide-y divide-gray-800/50">
+                        <!-- Packets injected via WebSocket / HTMX -->
+                        <tr class="text-gray-500">
+                            <td colspan="7" class="px-3 py-8 text-center">
+                                Dashboard implementation coming in Phase 3 (M5).
+                                Start a capture to see packets here.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

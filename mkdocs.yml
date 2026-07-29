@@ -1,0 +1,71 @@
+site_name: PacketSnifferAnalyzer
+site_description: Python-based packet sniffer and traffic analyzer
+site_url: https://dr-confluence-group.gitlab.io/PacketSnifferAnalyzer
+repo_url: https://gitlab.com/dr-confluence-group/PacketSnifferAnalyzer
+repo_name: GitLab
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: slate
+      primary: blue
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+    - scheme: default
+      primary: blue
+      accent: cyan
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: installation.md
+    - Quick Start: quickstart.md
+  - Reference:
+    - CLI Reference: cli-reference.md
+    - Architecture: architecture.md
+    - Security: security.md
+  - Development:
+    - Plugin Development: plugins.md
+    - Contributing: contributing.md
+    - ADRs: adr/README.md
+  - Operations:
+    - Troubleshooting: troubleshooting.md
+    - Monitoring: monitoring/monitoring-guide.md
+    - Deployment: deployment/deployment-guide.md
+    - Operations: operations/operations-guide.md
+    - Runbooks:
+      - Capture Sessions: runbooks/capture-session-management.md
+      - Alert Response: runbooks/alert-response.md

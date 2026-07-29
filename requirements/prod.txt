@@ -1,0 +1,4 @@
+# Production dependencies — minimal runtime for containerized deployment
+# Excludes GUI dependencies (not needed in headless/server mode)
+
+-r base.txt

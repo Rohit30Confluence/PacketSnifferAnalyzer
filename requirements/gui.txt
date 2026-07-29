@@ -1,0 +1,6 @@
+# GUI dependencies — optional, install with: pip install -e ".[gui]"
+
+-r base.txt
+
+PyQt6==6.7.0
+pyqtgraph==0.13.7

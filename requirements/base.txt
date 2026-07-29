@@ -1,0 +1,16 @@
+# Core runtime dependencies — pinned for reproducibility
+# Generated from pyproject.toml [project.dependencies]
+# Update with: pip-compile pyproject.toml --output-file requirements/base.txt
+
+scapy==2.5.0
+click==8.1.7
+fastapi==0.111.0
+uvicorn[standard]==0.29.0
+websockets==12.0
+structlog==24.1.0
+cryptography==42.0.5
+argon2-cffi==23.1.0
+pydantic==2.7.1
+pydantic-settings==2.2.1
+pyyaml==6.0.1
+httpx==0.27.0
