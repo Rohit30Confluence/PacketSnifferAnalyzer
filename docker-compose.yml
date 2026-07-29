@@ -1,0 +1,55 @@
+# PacketSnifferAnalyzer — Docker Compose
+#
+# Development environment with:
+#   - app: PacketSnifferAnalyzer with all dev dependencies
+#   - Network capabilities for packet capture
+#
+# Usage:
+#   docker compose up -d
+#   docker compose exec app bash
+#   docker compose exec app psa interfaces
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: base
+    container_name: psa-dev
+    volumes:
+      # Mount source for live editing
+      - ./src:/app/src:ro
+      - ./tests:/app/tests:ro
+      - ./configs:/app/configs:ro
+      # Persist session data and logs
+      - psa-sessions:/home/psa/.packetanalyzer/sessions
+      - psa-logs:/home/psa/.packetanalyzer/logs
+    ports:
+      # Web dashboard (localhost only)
+      - "127.0.0.1:8080:8080"
+    # Required for raw packet capture
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    # Use host network for interface access
+    network_mode: host
+    environment:
+      - PSA_ENV=development
+      - PSA_LOG_LEVEL=DEBUG
+      - PSA_DASHBOARD_HOST=127.0.0.1
+      - PSA_DASHBOARD_PORT=8080
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import packetanalyzer"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  psa-sessions:
+    driver: local
+  psa-logs:
+    driver: local
