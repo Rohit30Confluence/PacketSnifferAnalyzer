@@ -1,91 +1,98 @@
 # PacketSnifferAnalyzer
 
-[![Pipeline Status](https://gitlab.com/dr-confluence-group/PacketSnifferAnalyzer/badges/main/pipeline.svg)](https://gitlab.com/dr-confluence-group/PacketSnifferAnalyzer/-/pipelines)
-[![Coverage](https://gitlab.com/dr-confluence-group/PacketSnifferAnalyzer/badges/main/coverage.svg)](https://gitlab.com/dr-confluence-group/PacketSnifferAnalyzer/-/commits/main)
-[![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](https://unlicense.org)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![Code style: ruff](https://img.shields.io/badge/code%20style-ruff-000000.svg)](https://github.com/astral-sh/ruff)
+A Python-based packet sniffer and traffic analyzer with a CLI, a GUI, and a dashboard visualizer.
 
-A Python-based packet sniffer and network traffic analyzer with a CLI, desktop GUI, and real-time web dashboard. Built for network engineers, security researchers, and developers who need a transparent, auditable, and extensible alternative to heavyweight tools.
+One capture engine, three ways to look at the same traffic — the terminal user, the point-and-click user, and the person who just wants a dashboard to glance at.
+
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![License](https://img.shields.io/badge/License-Unlicense-green)
+![Status](https://img.shields.io/badge/Status-In%20Development-orange)
 
 ---
 
-## ⚠️ Legal Notice
+## Overview
 
-**Read this before using PacketSnifferAnalyzer.**
+PacketSnifferAnalyzer captures live network traffic and gives you three interfaces to work with it:
 
-Packet capture on a network you do not own or have **explicit written authorization** to monitor may violate applicable laws, including but not limited to:
+- **CLI** — filterable live capture output, scriptable and pipeable
+- **GUI** — a desktop window for browsing and inspecting packets
+- **Dashboard** — aggregate traffic visualization: protocol mix, top talkers, volume over time
 
-- Computer Fraud and Abuse Act (CFAA) — United States
-- Computer Misuse Act — United Kingdom
-- General Data Protection Regulation (GDPR) — European Union
-- Equivalent legislation in your jurisdiction
+All three sit on top of one shared capture core, so they stay in sync without duplicating logic.
 
-Captured packets may contain personal data. You are solely responsible for compliance with applicable data protection and privacy laws. **The authors accept no liability for unauthorized use.**
+---
 
-By using this tool, you confirm that you have the legal right to capture traffic on the target network.
+## Architecture
+
+```
+Interface → Capture Engine → Parser → Analyzer → CLI / GUI / Dashboard
+```
+
+- **Capture Engine** — pulls raw packets off a network interface
+- **Parser** — decodes protocol layers (Ethernet, IP, TCP/UDP)
+- **Analyzer** — aggregates parsed packets into stats and patterns
+- **Interfaces** — CLI, GUI, and Dashboard each consume the same analyzed data
 
 ---
 
 ## Features
 
-- **Live packet capture** from one or more network interfaces with BPF pre-filtering
-- **Protocol dissection** for Ethernet, ARP, IPv4, IPv6, TCP, UDP, ICMP, DNS, DHCP, VLAN, TLS (metadata only)
-- **Display filtering** with a composable filter DSL (AND / OR / NOT)
-- **Real-time statistics**: packets/sec, bytes/sec, top talkers, protocol distribution, flow table
-- **Session management**: named sessions, PCAP save/load, file rotation
-- **Export**: PCAP, JSON, CSV, plain-text summary; optional payload redaction
-- **Alert engine**: threshold-based rules with console, log, and webhook output
-- **Plugin system**: load custom dissectors without modifying core code
-- **Three interfaces**: CLI, PyQt6 desktop GUI, FastAPI + HTMX web dashboard
-- **Offline analysis**: open any PCAP file without a live interface
-- **Encrypted storage**: AES-256-GCM with Argon2id key derivation
-- **Audit logging**: tamper-evident append-only session audit trail
-
----
-
-## Requirements
-
-| Requirement | Version |
-|---|---|
-| Python | 3.10, 3.11, or 3.12 |
-| Operating System | Linux (primary), macOS (secondary), Windows (tertiary) |
-| libpcap / Npcap | See platform notes below |
-
-### Platform Notes
-
-**Linux:** Install libpcap development headers.
-```bash
-# Debian / Ubuntu
-sudo apt-get install libpcap-dev
-
-# Fedora / RHEL
-sudo dnf install libpcap-devel
-```
-
-**macOS:** libpcap is included with Xcode Command Line Tools.
-```bash
-xcode-select --install
-```
-
-**Windows:** Install [Npcap](https://npcap.com/) with the “WinPcap API-compatible mode” option enabled.
+- Live packet sniffing from a chosen network interface
+- Protocol-level breakdown (Ethernet / IP / TCP / UDP)
+- Packet-level inspection — drill from summary to individual packet
+- Dashboard view of traffic volume, protocol mix, and top talkers
+- Save and load capture sessions
 
 ---
 
 ## Installation
 
-### From PyPI (recommended)
 ```bash
-pip install packetsnifferanalyzer
+git clone https://github.com/Rohit30Confluence/PacketSnifferAnalyzer.git
+cd PacketSnifferAnalyzer
 ```
 
-### From Source
+Setup and dependency instructions will land here once the capture core ships (see [Roadmap](#roadmap)).
+
+---
+
+## Usage
+
 ```bash
-git clone https://gitlab.com/dr-confluence-group/PacketSnifferAnalyzer.git
-cd PacketSnifferAnalyzer
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
+# Planned CLI usage — subject to change
+python -m packetsniffer capture --interface eth0
+python -m packetsniffer capture --interface eth0 --filter tcp
+python -m packetsniffer dashboard
+```
+
+---
+
+## Roadmap
+
+| Version | Milestone |
+|---|---|
+| v0.1 | Capture core — interface selection, raw packet capture, basic protocol parsing (Ethernet/IP/TCP/UDP) |
+| v0.2 | CLI — filterable live capture output, save/load capture files |
+| v0.3 | GUI — desktop packet list and inspector view |
+| v0.4 | Dashboard — aggregate traffic visualization (volume, protocol mix, top talkers) |
+
+---
+
+## Contributing
+
+The project is early and the architecture above is the current plan — issues and pull requests that help shape it are welcome. Open an issue before starting significant work so effort doesn't get duplicated.
+
+---
+
+## Security
+
+This tool captures live network traffic. Only run it on networks and interfaces you own or are authorized to monitor. Unauthorized packet capture may be illegal in your jurisdiction.
+
+---
+
+## License
+
+Released under the [Unlicense](LICENSE) — public domain.
 ```
 
 ### With Docker
