@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PacketSnifferAnalyzer</title>
+<meta name="description" content="A Python-based packet sniffer and traffic analyzer with CLI, GUI, and dashboard visualizer. In development.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0d12; --bg-raised:#10141b; --line:#1e2530;
+    --text:#d7dde5; --text-dim:#7c8798; --text-faint:#4a5567;
+    --amber:#e8a33d; --accent:#5aa9e6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--text);
+    font-family:'IBM Plex Sans',-apple-system,sans-serif;
+    min-height:100vh; display:flex; flex-direction:column;
+  }
+  body::before{
+    content:""; position:fixed; inset:0;
+    background-image:linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:56px 56px; opacity:0.22; pointer-events:none;
+  }
+  a{ color:var(--accent); }
+  .mono{ font-family:'IBM Plex Mono',monospace; }
+
+  header{ padding:24px; border-bottom:1px solid var(--line); position:relative; z-index:1; }
+  .brand{ font-family:'IBM Plex Mono',monospace; font-weight:600; font-size:14px; display:flex; align-items:center; gap:9px; }
+  .dot{ width:8px; height:8px; border-radius:50%; background:var(--amber); box-shadow:0 0 7px var(--amber); }
+
+  main{ flex:1; display:flex; align-items:center; justify-content:center; position:relative; z-index:1; padding:40px 24px; }
+  .card{ max-width:520px; text-align:left; }
+  .eyebrow{ font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:0.08em; color:var(--amber); text-transform:uppercase; margin-bottom:18px; }
+  h1{ font-family:'IBM Plex Mono',monospace; font-weight:700; font-size:clamp(26px,5vw,38px); color:#fff; line-height:1.25; margin-bottom:18px; }
+  p{ color:var(--text-dim); font-size:15.5px; line-height:1.65; margin-bottom:14px; }
+  .status-box{
+    margin-top:28px; border:1px solid var(--line); border-radius:4px;
+    background:var(--bg-raised); padding:16px 18px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; color:var(--text-faint);
+  }
+  .status-box div{ margin-bottom:6px; }
+  .status-box div:last-child{ margin-bottom:0; }
+  .status-box span{ color:var(--text-dim); }
+  .cta{ margin-top:28px; display:flex; gap:12px; }
+  .btn{ font-family:'IBM Plex Mono',monospace; font-size:13px; padding:10px 16px; border-radius:3px; border:1px solid var(--line); }
+  .btn-primary{ background:var(--text); color:var(--bg); border-color:var(--text); font-weight:600; }
+  .btn-primary:hover{ background:#fff; }
+  .btn-ghost{ color:var(--text); }
+  .btn-ghost:hover{ background:var(--bg-raised); }
+  .btn{ text-decoration:none; }
+
+  footer{ padding:20px 24px; border-top:1px solid var(--line); position:relative; z-index:1; }
+  footer p{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--text-faint); margin:0; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand"><span class="dot"></span>PacketSnifferAnalyzer</div>
+</header>
+
+<main>
+  <div class="card">
+    <div class="eyebrow">In development</div>
+    <h1>A packet sniffer & traffic analyzer, not yet built.</h1>
+    <p>This project is planned as a Python-based packet sniffer and traffic analyzer with a CLI, a GUI, and a dashboard visualizer.</p>
+    <p>The repository currently holds a license and nothing else — no source, no README. This page will be replaced with real documentation once code lands.</p>
+
+    <div class="status-box">
+      <div><span>commits</span> — 1</div>
+      <div><span>source</span> — none yet</div>
+      <div><span>license</span> — Unlicense (public domain)</div>
+    </div>
+
+    <div class="cta">
+      <a class="btn btn-primary" href="https://github.com/Rohit30Confluence/PacketSnifferAnalyzer">View repository</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>packetsnifferanalyzer · python · cli · gui · dashboard</p>
+</footer>
+
+</body>
+</html>
