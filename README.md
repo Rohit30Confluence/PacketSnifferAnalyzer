@@ -188,6 +188,4 @@ To report a security vulnerability, please follow the process in [SECURITY.md](S
 
 ---
 
-## License
 
-This project is released into the public domain under the [Unlicense](LICENSE). See [SECURITY.md](SECURITY.md) for responsible use requirements.
