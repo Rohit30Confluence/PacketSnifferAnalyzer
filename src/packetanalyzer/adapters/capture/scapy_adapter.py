@@ -1,51 +1,80 @@
-"""Scapy-based live packet capture adapter.
-
-This adapter implements CapturePort using Scapy's sniff() function.
-Capture runs in a dedicated thread and feeds packets into a thread-safe
-ring buffer. The ring buffer is consumed by the dissection worker pool.
-
-Privilege requirements:
-    Linux:   CAP_NET_RAW + CAP_NET_ADMIN (or root)
-    macOS:   root
-    Windows: Administrator + Npcap installed
-"""
+"""Scapy-based live packet capture adapter."""
 
 from __future__ import annotations
 
-from packetanalyzer.ports.capture_port import CapturePort, InterfaceInfo, PacketCallback
+from scapy.all import conf
+from scapy.interfaces import NetworkInterface
+
 from packetanalyzer.domain.session import CaptureSession
 from packetanalyzer.infrastructure.logging import get_logger
+from packetanalyzer.ports.capture_port import (
+    CapturePort,
+    InterfaceInfo,
+    PacketCallback,
+)
 
 logger = get_logger(__name__)
 
 
 class ScapyCaptureAdapter(CapturePort):
-    """Live packet capture adapter using Scapy.
-
-    This is a scaffold. The full implementation will be added in
-    Milestone 1 (Epic 2, Issue 2.3).
-    """
+    """Live packet capture adapter using Scapy."""
 
     def list_interfaces(self) -> list[InterfaceInfo]:
         """Return all available network interfaces detected by Scapy."""
-        raise NotImplementedError("Implemented in Phase 3 — M1")
+        interfaces: list[InterfaceInfo] = []
 
-    def start(self, session: CaptureSession, packet_callback: PacketCallback) -> None:
+        for raw_interface in conf.ifaces.values():
+            if not isinstance(raw_interface, NetworkInterface):
+                continue
+
+            addresses: list[str] = []
+
+            for version_addresses in raw_interface.ips.values():
+                for raw_address in version_addresses:
+                    address = str(raw_address)
+
+                    # Scapy reports unspecified addresses on some
+                    # macOS virtual interfaces. They are not assigned
+                    # interface addresses and should not enter the domain.
+                    if address in {"0.0.0.0", "::"}:
+                        continue
+
+                    addresses.append(address)
+
+            flags = raw_interface.flags
+
+            interfaces.append(
+                InterfaceInfo(
+                    name=raw_interface.name,
+                    description=raw_interface.description or raw_interface.name,
+                    is_up=bool(flags & "UP"),
+                    is_loopback=bool(flags & "LOOPBACK"),
+                    addresses=addresses,
+                )
+            )
+
+        return interfaces
+
+    def start(
+        self,
+        session: CaptureSession,
+        packet_callback: PacketCallback,
+    ) -> None:
         """Start live packet capture."""
-        raise NotImplementedError("Implemented in Phase 3 — M1")
+        raise NotImplementedError("Live capture is implemented in M2.")
 
     def stop(self) -> None:
-        """Stop the capture and flush the ring buffer."""
-        raise NotImplementedError("Implemented in Phase 3 — M1")
+        """Stop the capture."""
+        raise NotImplementedError("Live capture is implemented in M2.")
 
     def pause(self) -> None:
         """Pause packet capture."""
-        raise NotImplementedError("Implemented in Phase 3 — M1")
+        raise NotImplementedError("Live capture is implemented in M2.")
 
     def resume(self) -> None:
         """Resume a paused capture."""
-        raise NotImplementedError("Implemented in Phase 3 — M1")
+        raise NotImplementedError("Live capture is implemented in M2.")
 
     def get_drop_count(self) -> int:
         """Return the number of dropped packets."""
-        raise NotImplementedError("Implemented in Phase 3 — M1")
+        raise NotImplementedError("Live capture is implemented in M2.")
