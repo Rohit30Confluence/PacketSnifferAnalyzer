@@ -1,191 +1,473 @@
 # PacketSnifferAnalyzer
 
-A Python-based packet sniffer and traffic analyzer with a CLI, a GUI, and a dashboard visualizer.
+A Python-based network packet analysis platform for **live traffic capture, protocol dissection, packet inspection, flow analysis, security detection, and traffic visualization**.
 
-One capture engine, three ways to look at the same traffic — the terminal user, the point-and-click user, and the person who just wants a dashboard to glance at.
+Built around a **Clean Architecture + Hexagonal Ports & Adapters** design so capture engines, protocol dissectors, detection logic, storage, and user interfaces remain independently testable.
 
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
+![Tests](https://img.shields.io/badge/Tests-53%20passing-brightgreen)
+![Architecture](https://img.shields.io/badge/Architecture-Clean%20%2B%20Hexagonal-purple)
+![Status](https://img.shields.io/badge/Status-Active%20Development-orange)
 ![License](https://img.shields.io/badge/License-Unlicense-green)
-![Status](https://img.shields.io/badge/Status-In%20Development-orange)
 
 ---
 
 ## Overview
 
-PacketSnifferAnalyzer captures live network traffic and gives you three interfaces to work with it:
+PacketSnifferAnalyzer is being developed as a practical **network-security analysis platform**, rather than a basic packet-printing script.
 
-- **CLI** — filterable live capture output, scriptable and pipeable
-- **GUI** — a desktop window for browsing and inspecting packets
-- **Dashboard** — aggregate traffic visualization: protocol mix, top talkers, volume over time
+The project is designed to process both live traffic and recorded captures through a layered analysis pipeline:
 
-All three sit on top of one shared capture core, so they stay in sync without duplicating logic.
+```text
+Network / PCAP
+      │
+      ▼
+Capture Adapter
+      │
+      ▼
+Raw Packet
+      │
+      ▼
+Protocol Dissection
+      │
+      ▼
+Normalized Domain Packet
+      │
+      ▼
+Flow / Feature Analysis
+      │
+      ▼
+Security Detection
+      │
+      ├── CLI
+      ├── GUI
+      ├── Web Dashboard
+      └── Evidence / Export
+```
+
+The architecture separates packet acquisition from analysis so the same core can eventually process live interfaces, PCAP files, test fixtures, and recorded sessions.
+
+---
+
+## Current Status
+
+### Implemented
+
+The current milestone establishes the core packet-dissection foundation.
+
+- Clean Architecture / Ports & Adapters foundation
+- Scapy-based packet dissection pipeline
+- Ethernet dissection
+- IPv4 dissection
+- TCP dissection
+- UDP dissection
+- Normalized domain packet representation
+- Layer-level raw byte preservation
+- Packet parse-error handling
+- Protocol dispatch through `ScapyDissector`
+- Unit tests for protocol dissectors
+- Orchestrator-level dissection tests
+- Automated test suite
+
+### Current Verification
+
+```text
+53 tests passing
+```
+
+The repository is actively being developed toward a complete network-security analysis workflow.
+
+---
+
+## Supported Protocol Dissection
+
+| Protocol | Status |
+|---|---|
+| Ethernet | Implemented |
+| IPv4 | Implemented |
+| TCP | Implemented |
+| UDP | Implemented |
+| DNS | Planned |
+| ARP | Planned |
+| TLS metadata | Planned |
+| HTTP metadata | Planned |
+| ICMP | Planned |
+| IPv6 | Planned |
+
+The protocol layer is intentionally modular so additional dissectors can be introduced without coupling the domain model directly to Scapy-specific implementation details.
+
+---
+
+## Security Detection Roadmap
+
+The analysis engine is intended to support practical defensive network-security detections such as:
+
+- TCP SYN scanning
+- UDP scanning
+- SYN flood indicators
+- ARP spoofing indicators
+- DNS anomalies
+- Repeated connection attempts
+- Beaconing patterns
+- Suspicious port activity
+- Abnormal traffic-volume patterns
+- MITRE ATT&CK technique mapping
+
+Detection logic will operate on normalized packets and flow-level features rather than being tightly coupled to the packet-capture implementation.
 
 ---
 
 ## Architecture
 
-```
-Interface → Capture Engine → Parser → Analyzer → CLI / GUI / Dashboard
+PacketSnifferAnalyzer follows **Clean Architecture** and **Hexagonal Architecture (Ports & Adapters)** principles.
+
+High-level structure:
+
+```text
+src/packetanalyzer/
+
+domain/
+    packet models
+    sessions
+    analysis entities
+
+ports/
+    capture
+    dissection
+    analysis
+    storage
+
+adapters/
+    capture
+    dissection
+    storage
+    presentation
+
+application/
+    use cases
+    orchestration
+
+infrastructure/
+    configuration
+    logging
 ```
 
-- **Capture Engine** — pulls raw packets off a network interface
-- **Parser** — decodes protocol layers (Ethernet, IP, TCP/UDP)
-- **Analyzer** — aggregates parsed packets into stats and patterns
-- **Interfaces** — CLI, GUI, and Dashboard each consume the same analyzed data
+The core domain is designed to remain independent from network-capture libraries and presentation frameworks wherever practical.
+
+Detailed architecture documentation:
+
+```text
+docs/architecture.md
+```
 
 ---
 
-## Features
+## Analysis Pipeline
 
-- Live packet sniffing from a chosen network interface
-- Protocol-level breakdown (Ethernet / IP / TCP / UDP)
-- Packet-level inspection — drill from summary to individual packet
-- Dashboard view of traffic volume, protocol mix, and top talkers
-- Save and load capture sessions
+The long-term processing pipeline is:
+
+```text
+Capture
+   ↓
+Normalize
+   ↓
+Dissect
+   ↓
+Flow Correlation
+   ↓
+Feature Extraction
+   ↓
+Detection Engine
+   ↓
+Evidence Store
+   ↓
+Visualization / Export
+```
+
+This separation allows the same analysis engine to work with:
+
+- Live network traffic
+- PCAP files
+- PCAPNG files
+- Recorded sessions
+- Automated test fixtures
+
+---
+
+## Project Structure
+
+```text
+PacketSnifferAnalyzer/
+├── docker/
+├── docs/
+├── examples/
+├── plugins/
+├── requirements/
+├── scripts/
+├── src/
+│   └── packetanalyzer/
+├── tests/
+├── docker-compose.yml
+├── mkdocs.yml
+├── pyproject.toml
+└── README.md
+```
 
 ---
 
 ## Installation
+
+Clone the repository:
 
 ```bash
 git clone https://github.com/Rohit30Confluence/PacketSnifferAnalyzer.git
 cd PacketSnifferAnalyzer
 ```
 
-Setup and dependency instructions will land here once the capture core ships (see [Roadmap](#roadmap)).
+The project requires **Python 3.10 or newer**.
 
----
+### Create a virtual environment
 
-## Usage
+Example using Python 3.12:
 
 ```bash
-# Planned CLI usage — subject to change
-python -m packetsniffer capture --interface eth0
-python -m packetsniffer capture --interface eth0 --filter tcp
-python -m packetsniffer dashboard
+python3.12 -m venv .venv
+source .venv/bin/activate
+```
+
+### Install the project
+
+```bash
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev]"
 ```
 
 ---
 
-## Roadmap
+## Testing
 
-| Version | Milestone |
-|---|---|
-| v0.1 | Capture core — interface selection, raw packet capture, basic protocol parsing (Ethernet/IP/TCP/UDP) |
-| v0.2 | CLI — filterable live capture output, save/load capture files |
-| v0.3 | GUI — desktop packet list and inspector view |
-| v0.4 | Dashboard — aggregate traffic visualization (volume, protocol mix, top talkers) |
+Run the complete test suite:
 
----
-
-## Contributing
-
-The project is early and the architecture above is the current plan — issues and pull requests that help shape it are welcome. Open an issue before starting significant work so effort doesn't get duplicated.
-
----
-
-## Security
-
-This tool captures live network traffic. Only run it on networks and interfaces you own or are authorized to monitor. Unauthorized packet capture may be illegal in your jurisdiction.
-
----
-
-## License
-
-Released under the [Unlicense](LICENSE) — public domain.
+```bash
+pytest
 ```
 
-### With Docker
+Current milestone:
+
+```text
+53 passed
+```
+
+Run with coverage:
+
 ```bash
-docker compose up -d
-docker compose exec app psa interfaces
+pytest --cov=packetanalyzer
+```
+
+Run static checks:
+
+```bash
+ruff check .
+```
+
+Check Git whitespace errors:
+
+```bash
+git diff --check
 ```
 
 ---
 
-## Quick Start
+## CLI
 
-### CLI
+The project exposes the `psa` command.
+
+Display available commands:
+
 ```bash
-# List available network interfaces
+psa --help
+```
+
+Planned/active command areas include:
+
+```bash
 psa interfaces
-
-# Start a live capture on eth0 with a BPF filter
-sudo psa capture start --interface eth0 --filter "tcp port 80"
-
-# Stop the capture
-psa capture stop
-
-# Open an existing PCAP file
-psa analyze --file capture.pcap
-
-# Export to JSON
-psa export --session my-session --format json --output results.json
-
-# Launch the web dashboard
-psa dashboard start
-```
-
-### GUI
-```bash
+psa capture
+psa analyze
+psa export
+psa dashboard
 psa gui
 ```
 
-### Web Dashboard
-```bash
-psa dashboard start --port 8080
-# Opens http://127.0.0.1:8080 in your default browser
+Live-capture functionality is being implemented incrementally, so command interfaces may evolve during development.
+
+---
+
+## Live Capture
+
+The next major implementation milestone is the capture adapter.
+
+Planned capabilities include:
+
+- Network-interface discovery
+- Live packet capture
+- Capture start/stop lifecycle
+- Pause/resume support
+- Packet callbacks
+- BPF filtering
+- Capture statistics
+- Drop-count reporting
+- Controlled shutdown
+- Testable capture abstraction
+
+The capture layer will feed the existing dissection pipeline rather than duplicating protocol-processing logic.
+
+---
+
+## PCAP / PCAPNG Analysis
+
+Recorded traffic support is planned as a first-class input path.
+
+The intended workflow is:
+
+```text
+PCAP / PCAPNG
+      ↓
+Capture Adapter
+      ↓
+Raw Packet
+      ↓
+ScapyDissector
+      ↓
+Normalized Packet
+      ↓
+Analysis
 ```
 
----
-
-## Privileges
-
-Raw packet capture requires elevated privileges on all platforms.
-
-| Platform | Method |
-|---|---|
-| Linux | `sudo psa ...` or grant `CAP_NET_RAW` + `CAP_NET_ADMIN` |
-| macOS | `sudo psa ...` |
-| Windows | Run from an Administrator terminal |
-
-The tool drops to minimum required privileges after interface binding on Linux.
+This allows offline investigation without requiring privileged live packet capture.
 
 ---
 
-## Architecture
+## Testing Philosophy
 
-PacketSnifferAnalyzer uses **Clean Architecture** with a **Hexagonal (Ports and Adapters)** pattern. The core domain has zero dependencies on UI frameworks, network libraries, or storage backends.
+The project prioritizes **real functionality backed by automated verification**.
 
-See [docs/architecture.md](docs/architecture.md) for the full architecture documentation.
+Protocol dissectors are tested independently using generated packet structures.
+
+The dissection orchestrator is tested separately to verify:
+
+- Protocol identification
+- Layer dispatch
+- Normalized layer creation
+- Raw-byte preservation
+- Parse-error handling
+- Multi-layer packet processing
+
+The architecture is designed so future capture and detection components can also be tested without requiring privileged access to a real network interface.
+
+---
+
+## Development Roadmap
+
+| Milestone | Focus | Status |
+|---|---|---|
+| M1 | Domain + protocol dissection foundation | **Complete** |
+| M2 | Live capture + interface management + BPF | **Next** |
+| M3 | PCAP / PCAPNG ingestion | Planned |
+| M4 | Flow / connection tracking | Planned |
+| M5 | Traffic feature extraction | Planned |
+| M6 | Network-security detection engine | Planned |
+| M7 | Evidence / forensic workflows | Planned |
+| M8 | Dashboard + API | Planned |
+| M9 | Performance benchmarking and hardening | Planned |
+
+---
+
+## Security Use Cases
+
+The project is intended to support authorized defensive and research workflows including:
+
+### Network Monitoring
+
+Inspect:
+
+- Source and destination addresses
+- Source and destination ports
+- Protocol distribution
+- Packet sizes
+- Traffic volume
+- Network conversations
+
+### Security Analysis
+
+Identify patterns associated with:
+
+- Scanning
+- Flooding
+- Suspicious repeated connections
+- DNS anomalies
+- ARP manipulation
+- Beacon-like communication
+- Abnormal traffic behavior
+
+### Forensics
+
+Future evidence workflows will support:
+
+- Capture preservation
+- Packet/session correlation
+- Structured event records
+- Detection evidence
+- Machine-readable exports
+
+---
+
+## Responsible Use
+
+Packet capture can expose sensitive network information.
+
+Only capture traffic on networks, systems, and interfaces that you own or are explicitly authorized to monitor.
+
+This project is intended for:
+
+- Security research
+- Network troubleshooting
+- Defensive monitoring
+- Authorized penetration testing
+- Cybersecurity education
+- Digital forensics experimentation
+
+Do not use PacketSnifferAnalyzer to intercept traffic without authorization.
 
 ---
 
 ## Documentation
 
-| Document | Description |
+| Document | Purpose |
 |---|---|
-| [Installation Guide](docs/installation.md) | Detailed per-platform installation |
-| [Quick Start](docs/quickstart.md) | Get capturing in 60 seconds |
-| [CLI Reference](docs/cli-reference.md) | All commands and options |
-| [Architecture](docs/architecture.md) | System design and component map |
-| [Plugin Development](docs/plugins.md) | Write custom dissectors |
-| [Security](docs/security.md) | Security model and threat analysis |
-| [Contributing](CONTRIBUTING.md) | How to contribute |
-| [Changelog](CHANGELOG.md) | Release history |
+| `docs/architecture.md` | Architecture and component design |
+| `docs/installation.md` | Installation guidance |
+| `docs/quickstart.md` | Quick-start workflow |
+| `docs/cli-reference.md` | CLI reference |
+| `docs/plugins.md` | Plugin development |
+| `docs/security.md` | Security considerations |
 
 ---
 
 ## Contributing
 
-Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting a merge request. All contributors must follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+Contributions and technical feedback are welcome.
+
+Before making substantial changes:
+
+1. Review the architecture.
+2. Review existing tests.
+3. Keep domain logic independent from infrastructure.
+4. Add automated tests for new functionality.
+5. Run the test suite before submitting changes.
 
 ---
 
-## Security
+## License
 
-To report a security vulnerability, please follow the process in [SECURITY.md](SECURITY.md). **Do not open a public issue for security vulnerabilities.**
-
----
-
-
+Released under the [Unlicense](LICENSE) and dedicated to the public domain.
