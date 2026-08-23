@@ -1,8 +1,12 @@
-"""CLI: interfaces command — list available network interfaces."""
+"""CLI: network interface discovery."""
 
 from __future__ import annotations
 
+import json
+
 import click
+
+from packetanalyzer.infrastructure.privilege import check_privileges
 
 
 @click.command(name="interfaces")
@@ -11,30 +15,52 @@ import click
     "output_json",
     is_flag=True,
     default=False,
-    help="Output as JSON.",
+    help="Output interface information as JSON.",
 )
 def interfaces(output_json: bool) -> None:
-    """List all available network interfaces on this host.
+    """List network interfaces available to PacketSnifferAnalyzer."""
 
-    Displays interface name, status, and IP addresses.
-    Requires sufficient privileges on some platforms.
+    privilege = check_privileges()
 
-    \b
-    Examples:
-        psa interfaces
-        psa interfaces --json
-    """
-    from packetanalyzer.infrastructure.privilege import check_privileges
-
-    status = check_privileges()
-    if not status.has_sufficient_privileges:
+    if not privilege.has_sufficient_privileges:
         click.echo(
             click.style("ERROR: Insufficient privileges.", fg="red"),
             err=True,
         )
-        click.echo(status.remediation, err=True)
-        raise SystemExit(1)
+        click.echo(privilege.remediation, err=True)
+        raise click.exceptions.Exit(1)
 
-    # Implementation: calls ScapyCaptureAdapter.list_interfaces()
-    # Full implementation in Phase 3 — M1
-    click.echo("Interface listing will be available in Phase 3 (M1).")
+
+    adapter = ScapyCaptureAdapter()
+    discovered = adapter.list_interfaces()
+
+    if output_json:
+        click.echo(
+            json.dumps(
+                [
+                    {
+                        "name": item.name,
+                        "description": item.description,
+                        "is_up": item.is_up,
+                        "is_loopback": item.is_loopback,
+                        "addresses": item.addresses,
+                    }
+                    for item in discovered
+                ],
+                indent=2,
+            )
+        )
+        return
+
+    if not discovered:
+        click.echo("No network interfaces found.")
+        return
+
+    for item in discovered:
+        state = "UP" if item.is_up else "DOWN"
+        loopback = " LOOPBACK" if item.is_loopback else ""
+        addresses = ", ".join(item.addresses) or "-"
+        click.echo(
+            f"{item.name:<12} {state:<4}{loopback:<10} "
+            f"{addresses}"
+        )
