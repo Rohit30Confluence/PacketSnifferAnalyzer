@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum, auto
 
 
@@ -46,7 +46,9 @@ class CaptureSession:
     name: str
     interface: str
     bpf_filter: str = ""
-    started_at: datetime = field(default_factory=datetime.utcnow)
+    started_at: datetime = field(
+        default_factory=lambda: datetime.now(timezone.utc)
+    )
     stopped_at: datetime | None = None
     state: SessionState = SessionState.CREATED
     packet_count: int = 0
