@@ -144,3 +144,69 @@ def test_runtime_status_refreshes_statistics() -> None:
     result = runtime.status()
 
     assert result is runtime.status.return_value
+
+
+def test_runtime_start_count_stops_after_requested_packets() -> None:
+    from packetanalyzer.domain.session import CaptureSession
+
+    session = CaptureSession(
+        session_id="test-count-session",
+        name="Count Test",
+        interface="en0",
+        bpf_filter="",
+        started_at=None,
+        operator="",
+        tool_version="test",
+    )
+
+    manager = MagicMock()
+
+    with patch(
+        "packetanalyzer.interfaces.cli.commands.capture.get_settings"
+    ) as mock_settings, patch(
+        "packetanalyzer.adapters.capture.scapy_adapter.ScapyCaptureAdapter"
+    ), patch(
+        "packetanalyzer.adapters.dissection.scapy_dissector.ScapyDissector"
+    ), patch(
+        "packetanalyzer.interfaces.cli.commands.capture.AuditLogger"
+    ):
+        mock_settings.return_value.log_dir = MagicMock()
+
+        runtime = LiveCaptureRuntime()
+        runtime.manager = manager
+
+        runtime.storage.open_session(session)
+
+        callback = None
+
+        def fake_manager_start(start_session, packet_callback):
+            nonlocal callback
+            callback = packet_callback
+
+        manager.start.side_effect = fake_manager_start
+
+        runtime.start(session, 2)
+
+        assert callback is not None
+
+        packet1 = MagicMock()
+        packet1.length = 100
+        packet1.interface = "en0"
+        packet1.session_id = session.session_id
+
+        packet2 = MagicMock()
+        packet2.length = 200
+        packet2.interface = "en0"
+        packet2.session_id = session.session_id
+
+        callback(packet1)
+
+        assert session.packet_count == 1
+        assert session.byte_count == 100
+        manager.stop.assert_not_called()
+
+        callback(packet2)
+
+        assert session.packet_count == 2
+        assert session.byte_count == 300
+        manager.stop.assert_called_once()
