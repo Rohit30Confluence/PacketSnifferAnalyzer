@@ -1,4 +1,8 @@
-"""StopCapture use case."""
+"""StopCapture use case.
+
+Stops an active capture, closes its storage, and records the final
+audit event only after shutdown has completed successfully.
+"""
 
 from __future__ import annotations
 
@@ -12,19 +16,7 @@ if TYPE_CHECKING:
 
 
 class StopCaptureUseCase:
-    """Orchestrates stopping an active packet capture session.
-
-    This use case:
-    1. Stops the capture backend
-    2. Flushes and closes storage
-    3. Updates session metadata
-    4. Writes an audit log entry
-
-    Args:
-        capture_port: The capture backend adapter.
-        storage_port: The storage backend adapter.
-        audit_logger: The audit logger.
-    """
+    """Orchestrate stopping an active packet capture session."""
 
     def __init__(
         self,
@@ -37,10 +29,17 @@ class StopCaptureUseCase:
         self._audit = audit_logger
 
     def execute(self, session: "CaptureSession") -> None:
-        """Stop a running capture session.
+        """Stop a capture session.
 
-        Args:
-            session: The session to stop.
+        Shutdown order is deliberately strict:
+
+        1. Stop the capture backend.
+        2. Flush and close storage.
+        3. Write the final audit event.
+
+        If either shutdown step fails, the exception is propagated and the
+        final audit event is not written because the session has not been
+        confirmed as fully closed.
         """
         self._capture.stop()
         self._storage.close_session(session)
